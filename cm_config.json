@@ -1,0 +1,33 @@
+{
+  "v2rayn_bin_path": "/Users/nyamiiko/Library/Application Support/v2rayN/bin",
+  "conf_save_path": "/Users/nyamiiko/Library/Mobile Documents/com~apple~CloudDocs/Application/Conf/conf",
+  "cores": {
+    "singbox": {
+      "repo": "SagerNet/sing-box",
+      "binary_name": "sing-box",
+      "subdir": "sing_box"
+    },
+    "mihomo": {
+      "repo": "MetaCubeX/mihomo",
+      "binary_name": "mihomo",
+      "subdir": "mihomo"
+    },
+    "xray": {
+      "repo": "XTLS/Xray-core",
+      "binary_name": "xray",
+      "subdir": "xray"
+    }
+  },
+  "geofiles": {
+    "geoip.dat": "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat",
+    "geosite.dat": "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat",
+    "Country.mmdb": "https://github.com/xream/geoip/releases/latest/download/ipinfo.country.mmdb",
+    "geoip.metadb": "https://github.com/MetaCubeX/meta-rules-dat/releases/latest/download/geoip.metadb"
+  },
+  "configs": [
+    {
+      "name": "QXwmsxwdsh.conf",
+      "url": "https://raw.githubusercontent.com/wmsxwdsh/Profiles2wmsxwdsh/main/QXwmsxwdsh.conf"
+    }
+  ]
+}
