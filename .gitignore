@@ -17,3 +17,6 @@ Cargo.lock
 
 # Logs
 *.log
+
+# Config files (contains sensitive information)
+config.json
