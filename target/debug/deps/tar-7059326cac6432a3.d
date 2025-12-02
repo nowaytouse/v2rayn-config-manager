@@ -1,0 +1,12 @@
+/Users/nyamiiko/Documents/git/singbox-manager/target/debug/deps/tar-7059326cac6432a3.d: /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/lib.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/archive.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/builder.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/entry.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/entry_type.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/error.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/header.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/pax.rs
+
+/Users/nyamiiko/Documents/git/singbox-manager/target/debug/deps/libtar-7059326cac6432a3.rmeta: /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/lib.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/archive.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/builder.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/entry.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/entry_type.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/error.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/header.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/pax.rs
+
+/Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/lib.rs:
+/Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/archive.rs:
+/Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/builder.rs:
+/Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/entry.rs:
+/Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/entry_type.rs:
+/Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/error.rs:
+/Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/header.rs:
+/Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tar-0.4.44/src/pax.rs:

@@ -1,0 +1,10 @@
+/Users/nyamiiko/Documents/git/singbox-manager/target/debug/deps/accesskit_consumer-4a567acde82cf034.d: /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/lib.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/tree.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/node.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/filters.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/iterators.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/text.rs
+
+/Users/nyamiiko/Documents/git/singbox-manager/target/debug/deps/libaccesskit_consumer-4a567acde82cf034.rmeta: /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/lib.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/tree.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/node.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/filters.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/iterators.rs /Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/text.rs
+
+/Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/lib.rs:
+/Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/tree.rs:
+/Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/node.rs:
+/Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/filters.rs:
+/Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/iterators.rs:
+/Users/nyamiiko/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/accesskit_consumer-0.16.1/src/text.rs:

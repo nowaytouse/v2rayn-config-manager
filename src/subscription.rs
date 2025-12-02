@@ -3,7 +3,7 @@ use tokio::fs;
 
 use crate::types::{Config, Subscription};
 
-/// 订阅管理器（纯CLI模式）
+/// Subscription Manager (Pure CLI Mode)
 pub struct SubscriptionManager;
 
 impl SubscriptionManager {
@@ -11,9 +11,9 @@ impl SubscriptionManager {
         Self
     }
 
-    /// 下载单个订阅
+    /// Download a single subscription
     pub async fn download_subscription(&self, sub: &Subscription) -> Result<()> {
-        println!("📥 开始下载订阅 [{}] 从 {}", sub.name, sub.url);
+        println!("📥 Downloading subscription [{}] from {}", sub.name, sub.url);
 
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(30))
@@ -23,26 +23,26 @@ impl SubscriptionManager {
             .get(&sub.url)
             .send()
             .await
-            .context("下载失败")?;
+            .context("Download failed")?;
 
         if !response.status().is_success() {
-            anyhow::bail!("下载失败，服务器返回状态码: {}", response.status());
+            anyhow::bail!("Download failed, server returned status: {}", response.status());
         }
 
-        let content = response.bytes().await.context("读取响应内容失败")?;
+        let content = response.bytes().await.context("Failed to read response content")?;
 
         if let Some(parent) = sub.save_path.parent() {
             fs::create_dir_all(parent)
                 .await
-                .context("创建目录失败")?;
+                .context("Failed to create directory")?;
         }
 
         fs::write(&sub.save_path, content)
             .await
-            .context("保存文件失败")?;
+            .context("Failed to save file")?;
 
         println!(
-            "✅ 订阅 [{}] 下载成功，已保存至 {}",
+            "✅ Subscription [{}] downloaded successfully, saved to {}",
             sub.name,
             sub.save_path.display()
         );
@@ -50,18 +50,17 @@ impl SubscriptionManager {
         Ok(())
     }
 
-    /// 运行订阅下载器（下载所有订阅）
+    /// Run subscription downloader (download all subscriptions)
     pub async fn run_all(&self, config: &Config) -> Result<()> {
-        println!("🔄 开始检查订阅更新...");
+        println!("🔄 Checking subscription updates...");
 
         for sub in &config.subscriptions {
             if let Err(e) = self.download_subscription(sub).await {
-                eprintln!("❌ 处理订阅 [{}] 时发生错误: {}", sub.name, e);
+                eprintln!("❌ Error processing subscription [{}]: {}", sub.name, e);
             }
         }
 
-        println!("✅ 订阅更新检查完成");
+        println!("✅ Subscription update check complete");
         Ok(())
     }
 }
-
