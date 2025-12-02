@@ -283,3 +283,28 @@ MIT License
 **Platform**: macOS / Linux / Windows  
 **Language**: Rust  
 **Last Updated**: 2024-12-02
+
+## 🔒 Security Note
+
+**Important**: `config.json` contains sensitive information (subscription URLs, personal paths) and should **NEVER** be committed to Git.
+
+### First Time Setup
+
+1. Copy the example config:
+   ```bash
+   cp config.example.json config.json
+   ```
+
+2. Edit `config.json` with your settings:
+   - Update subscription URLs
+   - Update installation paths
+   - Configure update intervals
+
+3. The `config.json` file is already in `.gitignore` and will not be tracked by Git.
+
+### Configuration Security
+
+- ✅ `config.example.json` - Safe template (committed to Git)
+- ❌ `config.json` - Your personal config (NOT committed to Git)
+- ✅ All sensitive data removed from Git history
+
