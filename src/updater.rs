@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use tar::Archive;
 use tokio::fs;
 
-use crate::types::Config;
+use crate::types::{Config, MihomoCoreUpdate};
 
 /// Core Updater (Pure CLI Mode) - Direct Download, No API
 pub struct CoreUpdater;
@@ -192,6 +192,183 @@ impl CoreUpdater {
         }
 
         println!("✅ sing-box core update complete");
+        Ok(())
+    }
+}
+
+/// Mihomo Core Updater - Direct Download from GitHub Releases
+pub struct MihomoUpdater;
+
+impl MihomoUpdater {
+    pub fn new() -> Self {
+        Self
+    }
+
+    /// Get download URL - Simple and direct
+    fn get_download_url(&self, check_prerelease: bool) -> String {
+        let os = match std::env::consts::OS {
+            "macos" => "darwin",
+            other => other,
+        };
+        let arch = match std::env::consts::ARCH {
+            "x86_64" => "amd64",
+            "aarch64" => "arm64",
+            "x86" => "386",
+            other => other,
+        };
+
+        if check_prerelease {
+            // Prerelease: fixed URL with current commit hash
+            // Note: This hash may change, but it's the simplest approach
+            format!(
+                "https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/mihomo-{}-{}-alpha-bc719eb.gz",
+                os, arch
+            )
+        } else {
+            // Stable: use latest tag (will redirect to actual version)
+            format!(
+                "https://github.com/MetaCubeX/mihomo/releases/latest/download/mihomo-{}-{}.gz",
+                os, arch
+            )
+        }
+    }
+
+    /// Download and extract binary
+    pub async fn download_and_extract(&self, check_prerelease: bool) -> Result<PathBuf> {
+        let download_url = self.get_download_url(check_prerelease);
+        println!("📥 Downloading mihomo ({}) from: {}", 
+                 if check_prerelease { "prerelease" } else { "stable" }, 
+                 download_url);
+
+        let client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(300))
+            .user_agent("config-manager/2.0")
+            .build()?;
+
+        let response = client
+            .get(&download_url)
+            .send()
+            .await
+            .context("Failed to download")?;
+
+        if !response.status().is_success() {
+            anyhow::bail!("Download failed, status code: {}", response.status());
+        }
+
+        let bytes = response.bytes().await.context("Failed to read response")?;
+
+        // Create temporary directory
+        let temp_dir = std::env::temp_dir().join(format!("mihomo-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&temp_dir).context("Failed to create temp directory")?;
+
+        println!("📦 Extracting to: {}", temp_dir.display());
+
+        // Extract .gz file (mihomo uses single .gz, not tar.gz)
+        let extracted_path = self.extract_gz(&bytes, &temp_dir).await?;
+
+        Ok(extracted_path)
+    }
+
+    /// Extract .gz file (single file compression)
+    async fn extract_gz(&self, data: &[u8], dest_dir: &Path) -> Result<PathBuf> {
+        use flate2::read::GzDecoder;
+        use std::io::Read;
+
+        let data = data.to_vec();
+        let dest_dir = dest_dir.to_path_buf();
+
+        let result = tokio::task::spawn_blocking(move || -> Result<PathBuf> {
+            let mut decoder = GzDecoder::new(&data[..]);
+            let mut buffer = Vec::new();
+            decoder
+                .read_to_end(&mut buffer)
+                .context("Failed to decompress")?;
+
+            let exe_name = if cfg!(windows) {
+                "mihomo.exe"
+            } else {
+                "mihomo"
+            };
+
+            let extract_path = dest_dir.join(exe_name);
+            std::fs::write(&extract_path, buffer).context("Failed to write file")?;
+
+            // Set execute permissions on Unix
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                let mut perms = std::fs::metadata(&extract_path)?.permissions();
+                perms.set_mode(0o755);
+                std::fs::set_permissions(&extract_path, perms)?;
+            }
+
+            Ok(extract_path)
+        })
+        .await??;
+
+        println!("✅ Extracted mihomo to {}", result.display());
+        Ok(result)
+    }
+
+    /// Install file with backup
+    pub async fn install_file(&self, source: &Path, dest: &Path) -> Result<()> {
+        println!("📦 Installing {} to {}", source.display(), dest.display());
+
+        // Ensure target directory exists
+        if let Some(parent) = dest.parent() {
+            fs::create_dir_all(parent)
+                .await
+                .context("Failed to create target directory")?;
+        }
+
+        // Backup existing file if it exists
+        if dest.exists() {
+            let backup_path = dest.with_extension("bak");
+            println!("💾 Backing up existing file to {}", backup_path.display());
+            fs::rename(dest, &backup_path)
+                .await
+                .context("Failed to backup existing file")?;
+        }
+
+        // Copy file
+        fs::copy(source, dest).await.context("Failed to copy file")?;
+
+        // Set execute permissions on Unix
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mut perms = fs::metadata(dest).await?.permissions();
+            perms.set_mode(0o755);
+            fs::set_permissions(dest, perms).await?;
+        }
+
+        println!("✅ Installation successful! mihomo updated to {}", dest.display());
+        Ok(())
+    }
+
+    /// Run mihomo updater for all configured paths
+    pub async fn run_all(&self, config: &MihomoCoreUpdate) -> Result<()> {
+        if !config.enabled {
+            println!("⚠️  mihomo core update is disabled");
+            return Ok(());
+        }
+
+        println!("🔄 Updating mihomo core (direct download)...");
+
+        let temp_binary_path = self.download_and_extract(config.check_prerelease).await?;
+
+        // Install to all configured paths
+        for install_path in &config.install_paths {
+            println!("\n📍 Installing to: {}", install_path.display());
+            self.install_file(&temp_binary_path, install_path).await?;
+        }
+
+        // Clean up temporary files
+        if let Some(temp_dir) = temp_binary_path.parent() {
+            let _ = fs::remove_dir_all(temp_dir).await;
+        }
+
+        println!("\n✅ mihomo core update complete for all paths");
         Ok(())
     }
 }

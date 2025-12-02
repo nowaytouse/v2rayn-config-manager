@@ -6,7 +6,7 @@ use tokio::time::sleep;
 use crate::config::load_config;
 use crate::subscription::SubscriptionManager;
 use crate::types::Config;
-use crate::updater::CoreUpdater;
+use crate::updater::{CoreUpdater, MihomoUpdater};
 
 /// Run CLI mode
 pub async fn run_cli(config_path: PathBuf, once_mode: bool) -> Result<()> {
@@ -44,9 +44,15 @@ async fn run_tasks(config: &Config) -> Result<()> {
     let sub_manager = SubscriptionManager::new();
     sub_manager.run_all(config).await?;
 
-    // Update core
+    // Update sing-box core
     let core_updater = CoreUpdater::new();
     core_updater.run_all(config).await?;
+
+    // Update mihomo core (if configured)
+    if let Some(mihomo_config) = &config.mihomo_core_update {
+        let mihomo_updater = MihomoUpdater::new();
+        mihomo_updater.run_all(mihomo_config).await?;
+    }
 
     Ok(())
 }

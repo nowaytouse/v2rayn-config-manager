@@ -4,8 +4,8 @@ use std::path::PathBuf;
 
 use crate::config::{load_config_sync, save_config_sync};
 use crate::subscription::SubscriptionManager;
-use crate::types::{Config, Subscription, SingboxCoreUpdate};
-use crate::updater::CoreUpdater;
+use crate::types::{Config, MihomoCoreUpdate, Subscription, SingboxCoreUpdate};
+use crate::updater::{CoreUpdater, MihomoUpdater};
 
 fn read_input(prompt: &str) -> io::Result<String> {
     print!("{}: ", prompt);
@@ -67,6 +67,7 @@ impl InteractiveCLI {
                 "管理订阅",
                 "更新订阅",
                 "更新 Sing-box 核心",
+                "更新 Mihomo 核心",
                 "执行所有更新",
                 "配置设置",
                 "退出",
@@ -77,10 +78,11 @@ impl InteractiveCLI {
                 0 => self.show_config().await?,
                 1 => self.manage_subscriptions().await?,
                 2 => self.update_subscriptions().await?,
-                3 => self.update_core().await?,
-                4 => self.run_all_updates().await?,
-                5 => self.settings_menu().await?,
-                6 => {
+                3 => self.update_singbox_core().await?,
+                4 => self.update_mihomo_core().await?,
+                5 => self.run_all_updates().await?,
+                6 => self.settings_menu().await?,
+                7 => {
                     println!("再见！");
                     break;
                 }
@@ -108,6 +110,17 @@ impl InteractiveCLI {
         println!("  启用自动更新: {}", if config.singbox_core_update.enabled { "是" } else { "否" });
         println!("  检查预发布版本: {}", if config.singbox_core_update.check_prerelease { "是" } else { "否" });
         println!("  安装路径: {}", config.singbox_core_update.install_path.display());
+
+        if let Some(mihomo_config) = &config.mihomo_core_update {
+            println!("\nMihomo 核心:");
+            println!("  启用自动更新: {}", if mihomo_config.enabled { "是" } else { "否" });
+            println!("  检查预发布版本: {}", if mihomo_config.check_prerelease { "是" } else { "否" });
+            println!("  安装路径:");
+            for path in &mihomo_config.install_paths {
+                println!("    - {}", path.display());
+            }
+        }
+
         println!();
         Ok(())
     }
@@ -203,7 +216,7 @@ impl InteractiveCLI {
         Ok(())
     }
 
-    async fn update_core(&self) -> Result<()> {
+    async fn update_singbox_core(&self) -> Result<()> {
         println!("\n═ 更新 Sing-box 核心 ═");
         let config = load_config_sync(&self.config_path)?;
 
@@ -216,6 +229,30 @@ impl InteractiveCLI {
         println!("开始检查并更新 Sing-box 核心...");
         updater.run_all(&config).await?;
         println!("✓ Sing-box 核心更新完成\n");
+        Ok(())
+    }
+
+    async fn update_mihomo_core(&self) -> Result<()> {
+        println!("\n═ 更新 Mihomo 核心 ═");
+        let config = load_config_sync(&self.config_path)?;
+
+        let mihomo_config = match &config.mihomo_core_update {
+            Some(cfg) => cfg,
+            None => {
+                println!("⚠ Mihomo 核心未配置");
+                return Ok(());
+            }
+        };
+
+        if !mihomo_config.enabled {
+            println!("⚠ Mihomo 核心更新已禁用");
+            return Ok(());
+        }
+
+        let updater = MihomoUpdater::new();
+        println!("开始检查并更新 Mihomo 核心...");
+        updater.run_all(mihomo_config).await?;
+        println!("✓ Mihomo 核心更新完成\n");
         Ok(())
     }
 
@@ -235,6 +272,18 @@ impl InteractiveCLI {
             println!("2. Sing-box 核心更新已禁用，跳过");
         }
 
+        if let Some(mihomo_config) = &config.mihomo_core_update {
+            if mihomo_config.enabled {
+                println!("3. 更新 Mihomo 核心...");
+                let mihomo_updater = MihomoUpdater::new();
+                mihomo_updater.run_all(mihomo_config).await?;
+            } else {
+                println!("3. Mihomo 核心更新已禁用，跳过");
+            }
+        } else {
+            println!("3. Mihomo 核心未配置，跳过");
+        }
+
         println!("✓ 所有更新完成\n");
         Ok(())
     }
@@ -245,14 +294,16 @@ impl InteractiveCLI {
             let options = vec![
                 "更改更新间隔",
                 "配置 Sing-box 核心更新",
+                "配置 Mihomo 核心更新",
                 "返回主菜单",
             ];
             let choice = show_menu(&options)?;
 
             match choice {
                 0 => self.change_update_interval().await?,
-                1 => self.configure_core_update().await?,
-                2 => break,
+                1 => self.configure_singbox_core_update().await?,
+                2 => self.configure_mihomo_core_update().await?,
+                3 => break,
                 _ => {}
             }
         }
@@ -271,7 +322,7 @@ impl InteractiveCLI {
         Ok(())
     }
 
-    async fn configure_core_update(&self) -> Result<()> {
+    async fn configure_singbox_core_update(&self) -> Result<()> {
         println!("\n配置 Sing-box 核心更新");
         let mut config = load_config_sync(&self.config_path)?;
 
@@ -296,6 +347,80 @@ impl InteractiveCLI {
 
         save_config_sync(&self.config_path, &config)?;
         println!("✓ 配置已保存");
+        Ok(())
+    }
+
+    async fn configure_mihomo_core_update(&self) -> Result<()> {
+        println!("\n配置 Mihomo 核心更新");
+        let mut config = load_config_sync(&self.config_path)?;
+
+        let current_config = config.mihomo_core_update.clone().unwrap_or_else(|| {
+            MihomoCoreUpdate {
+                enabled: false,
+                check_prerelease: false,
+                install_paths: vec![PathBuf::from("/usr/local/bin/mihomo")],
+            }
+        });
+
+        let enabled = read_confirm("启用自动更新?", current_config.enabled)?;
+        let check_prerelease = if enabled {
+            read_confirm("检查预发布版本?", current_config.check_prerelease)?
+        } else {
+            current_config.check_prerelease
+        };
+
+        println!("\n当前安装路径:");
+        for (i, path) in current_config.install_paths.iter().enumerate() {
+            println!("  [{}] {}", i + 1, path.display());
+        }
+
+        let mut install_paths = current_config.install_paths.clone();
+        
+        loop {
+            println!("\n路径管理:");
+            let options = vec!["添加路径", "删除路径", "完成配置"];
+            let choice = show_menu(&options)?;
+
+            match choice {
+                0 => {
+                    let path = read_input("新的安装路径")?;
+                    if !path.is_empty() {
+                        install_paths.push(PathBuf::from(path));
+                        println!("✓ 路径已添加");
+                    }
+                }
+                1 => {
+                    if install_paths.is_empty() {
+                        println!("⚠ 没有可删除的路径");
+                        continue;
+                    }
+                    let path_strs: Vec<String> = install_paths.iter()
+                        .map(|p| p.display().to_string())
+                        .collect();
+                    let path_refs: Vec<&str> = path_strs.iter().map(|s| s.as_str()).collect();
+                    println!("\n选择要删除的路径:");
+                    let idx = show_menu(&path_refs)?;
+                    install_paths.remove(idx);
+                    println!("✓ 路径已删除");
+                }
+                2 => break,
+                _ => {}
+            }
+        }
+
+        if install_paths.is_empty() {
+            println!("⚠ 至少需要一个安装路径");
+            install_paths.push(PathBuf::from("/usr/local/bin/mihomo"));
+        }
+
+        config.mihomo_core_update = Some(MihomoCoreUpdate {
+            enabled,
+            check_prerelease,
+            install_paths,
+        });
+
+        save_config_sync(&self.config_path, &config)?;
+        println!("✓ Mihomo 配置已保存");
         Ok(())
     }
 }

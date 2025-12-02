@@ -6,7 +6,10 @@
 
 ## ✨ Features
 
-- ✅ **Auto Update Core** - Download and install latest sing-box automatically
+- ✅ **Dual Core Update** - Download and install latest sing-box and mihomo automatically
+- ✅ **Multi-path Support** - Update mihomo to multiple locations simultaneously
+- ✅ **Smart Backup** - Auto backup old versions before replacement
+- ✅ **Permission Management** - Auto set executable permissions
 - ✅ **Subscription Management** - Auto download and update config files
 - ✅ **Interactive Menu** - User-friendly CLI interface
 - ✅ **Scheduled Tasks** - Auto update at specified intervals
@@ -42,6 +45,14 @@ Edit `config.json`:
     "enabled": true,
     "check_prerelease": false,
     "install_path": "/usr/local/bin/sing-box"
+  },
+  "mihomo_core_update": {
+    "enabled": true,
+    "check_prerelease": false,
+    "install_paths": [
+      "/usr/local/bin/mihomo",
+      "/path/to/v2rayN/bin/mihomo"
+    ]
   }
 }
 ```
@@ -90,11 +101,20 @@ chmod +x update.sh
 
 ### Core Update
 
-- Auto detect latest version (no API rate limit)
-- Direct download from GitHub releases
-- Auto extract and install
-- Cross-platform support (macOS/Linux/Windows)
-- Auto set execute permissions
+- **Sing-box Core**
+  - Auto detect latest version (no API rate limit)
+  - Direct download from GitHub releases
+  - Auto extract tar.gz and install
+  - Cross-platform support (macOS/Linux/Windows)
+  - Auto set execute permissions
+
+- **Mihomo Core** (NEW!)
+  - Auto detect latest version from MetaCubeX/mihomo
+  - Support stable and prerelease versions
+  - Auto extract .gz and install
+  - Multi-path installation support
+  - Auto backup old versions (.bak)
+  - Auto set executable permissions
 
 ### Interactive Menu
 
@@ -138,6 +158,11 @@ chmod +x update.sh
   - `enabled`: Enable core update
   - `check_prerelease`: Check prerelease versions
   - `install_path`: Core installation path
+
+- `mihomo_core_update`: Mihomo core update config (optional)
+  - `enabled`: Enable mihomo core update
+  - `check_prerelease`: Check prerelease versions
+  - `install_paths`: Array of installation paths (supports multiple locations)
 
 ## 📦 CLI Arguments
 

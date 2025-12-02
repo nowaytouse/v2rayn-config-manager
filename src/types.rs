@@ -10,6 +10,9 @@ pub struct Config {
     pub update_interval_hours: u64,
     /// Sing-box 核心更新配置
     pub singbox_core_update: SingboxCoreUpdate,
+    /// Mihomo 核心更新配置（可选）
+    #[serde(default)]
+    pub mihomo_core_update: Option<MihomoCoreUpdate>,
 }
 
 /// 单个订阅源
@@ -34,15 +37,35 @@ pub struct SingboxCoreUpdate {
     pub install_path: PathBuf,
 }
 
+/// Mihomo 核心更新配置
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MihomoCoreUpdate {
+    /// 是否启用自动更新
+    pub enabled: bool,
+    /// 是否检查预发布版本
+    pub check_prerelease: bool,
+    /// 安装路径列表（支持多个路径同时更新）
+    pub install_paths: Vec<PathBuf>,
+}
+
 // GitHub API types removed - using direct download instead
 
 impl Config {
     /// 创建默认配置
     pub fn default() -> Self {
-        let install_path = if cfg!(windows) {
+        let singbox_install_path = if cfg!(windows) {
             PathBuf::from("C:\\Program Files\\sing-box\\sing-box.exe")
         } else {
             PathBuf::from("/usr/local/bin/sing-box")
+        };
+
+        let mihomo_install_paths = if cfg!(windows) {
+            vec![PathBuf::from("C:\\Program Files\\mihomo\\mihomo.exe")]
+        } else {
+            vec![
+                PathBuf::from("/usr/local/bin/mihomo"),
+                // 可以添加更多路径
+            ]
         };
 
         Self {
@@ -55,8 +78,13 @@ impl Config {
             singbox_core_update: SingboxCoreUpdate {
                 enabled: true,
                 check_prerelease: false,
-                install_path,
+                install_path: singbox_install_path,
             },
+            mihomo_core_update: Some(MihomoCoreUpdate {
+                enabled: false, // 默认禁用，用户需要手动启用
+                check_prerelease: false,
+                install_paths: mihomo_install_paths,
+            }),
         }
     }
 }
