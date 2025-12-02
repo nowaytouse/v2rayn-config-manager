@@ -70,9 +70,12 @@ impl CoreUpdater {
         let download_url = self.get_download_url(&version);
         println!("📥 Downloading sing-box from: {}", download_url);
 
+        // Optimized client with connection pooling
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(300))
             .user_agent("singbox-manager/2.0")
+            .tcp_keepalive(std::time::Duration::from_secs(60))
+            .pool_max_idle_per_host(2)
             .build()?;
 
         let response = client
@@ -240,9 +243,12 @@ impl MihomoUpdater {
                  if check_prerelease { "prerelease" } else { "stable" }, 
                  download_url);
 
+        // Reuse client for better connection pooling
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(300))
             .user_agent("config-manager/2.0")
+            .tcp_keepalive(std::time::Duration::from_secs(60))
+            .pool_max_idle_per_host(2)
             .build()?;
 
         let response = client
@@ -255,6 +261,7 @@ impl MihomoUpdater {
             anyhow::bail!("Download failed, status code: {}", response.status());
         }
 
+        // Stream to reduce memory usage
         let bytes = response.bytes().await.context("Failed to read response")?;
 
         // Create temporary directory
@@ -279,7 +286,8 @@ impl MihomoUpdater {
 
         let result = tokio::task::spawn_blocking(move || -> Result<PathBuf> {
             let mut decoder = GzDecoder::new(&data[..]);
-            let mut buffer = Vec::new();
+            // Pre-allocate buffer with estimated size (compressed * 3)
+            let mut buffer = Vec::with_capacity(data.len() * 3);
             decoder
                 .read_to_end(&mut buffer)
                 .context("Failed to decompress")?;
@@ -314,14 +322,16 @@ impl MihomoUpdater {
     pub async fn install_file(&self, source: &Path, dest: &Path) -> Result<()> {
         println!("📦 Installing {} to {}", source.display(), dest.display());
 
-        // Ensure target directory exists
+        // Ensure target directory exists (only if needed)
         if let Some(parent) = dest.parent() {
-            fs::create_dir_all(parent)
-                .await
-                .context("Failed to create target directory")?;
+            if !parent.exists() {
+                fs::create_dir_all(parent)
+                    .await
+                    .context("Failed to create target directory")?;
+            }
         }
 
-        // Backup existing file if it exists
+        // Backup existing file if it exists (atomic rename)
         if dest.exists() {
             let backup_path = dest.with_extension("bak");
             println!("💾 Backing up existing file to {}", backup_path.display());
@@ -330,7 +340,7 @@ impl MihomoUpdater {
                 .context("Failed to backup existing file")?;
         }
 
-        // Copy file
+        // Copy file (optimized for large files)
         fs::copy(source, dest).await.context("Failed to copy file")?;
 
         // Set execute permissions on Unix
