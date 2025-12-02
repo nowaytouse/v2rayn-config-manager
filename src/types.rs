@@ -34,25 +34,7 @@ pub struct SingboxCoreUpdate {
     pub install_path: PathBuf,
 }
 
-/// GitHub Release 信息
-#[derive(Debug, Clone, Deserialize)]
-pub struct GithubRelease {
-    /// 标签名称
-    pub tag_name: String,
-    /// 是否为预发布版本
-    pub prerelease: bool,
-    /// 资源文件列表
-    pub assets: Vec<Asset>,
-}
-
-/// GitHub Release 资源文件
-#[derive(Debug, Clone, Deserialize)]
-pub struct Asset {
-    /// 文件名
-    pub name: String,
-    /// 下载链接
-    pub browser_download_url: String,
-}
+// GitHub API types removed - using direct download instead
 
 impl Config {
     /// 创建默认配置
